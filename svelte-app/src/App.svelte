@@ -2,6 +2,8 @@
 	export let name;
 	let fileContent = '';
     let incidents = [];
+    let incidentsByYear = {};  // New structure: { '2023': [{date, title, description}, ...], ... }
+    let selectedIncidents = [];
 
     function readFile(event) {
         const file = event.target.files[0];
@@ -22,10 +24,11 @@
         let currentIncident = null;
 
         lines.forEach((line, index) => {
-            // Check if line is a date-event title line
             if (/\d{2}\/\d{2}\/\d{4}/.test(line)) {
                 if (currentIncident) {
-                    incidents.push(currentIncident);
+                    const year = currentIncident.date.split('/')[2];
+                    if (!incidentsByYear[year]) incidentsByYear[year] = [];
+                    incidentsByYear[year].push(currentIncident);
                 }
                 const [date, ...titleParts] = line.split(' ');
                 currentIncident = {
@@ -37,11 +40,16 @@
                 currentIncident.description += line + ' ';
             }
 
-            // Handle last incident
             if (index === lines.length - 1 && currentIncident) {
-                incidents.push(currentIncident);
+                const year = currentIncident.date.split('/')[2];
+                if (!incidentsByYear[year]) incidentsByYear[year] = [];
+                incidentsByYear[year].push(currentIncident);
             }
         });
+    }
+
+    function selectYear(year) {
+        selectedIncidents = incidentsByYear[year].map(incident => `${incident.date} - ${incident.title}\n${incident.description}`).join('\n\n');
     }
 </script>
 
