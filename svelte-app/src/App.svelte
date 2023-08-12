@@ -1,9 +1,72 @@
 <script>
 	export let name;
+	let fileContent = '';
+    let incidents = [];
+
+    function readFile(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                fileContent = e.target.result;
+                processFileContent();
+            };
+
+            reader.readAsText(file);
+        }
+    }
+
+    function processFileContent() {
+        const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line);
+        let currentIncident = null;
+
+        lines.forEach((line, index) => {
+            // Check if line is a date-event title line
+            if (/\d{2}\/\d{2}\/\d{4}/.test(line)) {
+                if (currentIncident) {
+                    incidents.push(currentIncident);
+                }
+                const [date, ...titleParts] = line.split(' ');
+                currentIncident = {
+                    date: date,
+                    title: titleParts.join(' '),
+                    description: ''
+                };
+            } else if (currentIncident) {
+                currentIncident.description += line + ' ';
+            }
+
+            // Handle last incident
+            if (index === lines.length - 1 && currentIncident) {
+                incidents.push(currentIncident);
+            }
+        });
+    }
 </script>
 
+<input type="file" on:change={readFile} accept=".txt" />
+
+{#each incidents as incident (incident.date)}
+    <h2>{incident.date} - {incident.title}</h2>
+    <p>{incident.description}</p>
+{/each}
+
 <main>
-	<h1>Hello {name}!</h1>
+	<h1>Welcome to the Aviation Incidents App</h1>
+	<input type="file" on:change={readFile} accept=".txt" />
+	{#each incidents as incident (incident.date)}
+		<h2>{incident.date} - {incident.title}</h2>
+		<p>{incident.description}</p>
+	{/each}
+	<section>
+		{#each Object.keys(incidents) as year}
+			<button on:click={() => (fileContent = incidents[year])}>
+				{year}
+			</button>
+		{/each}
+	</section>
+	<textarea readonly bind:value={fileContent}></textarea>
 	<p>Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.</p>
 </main>
 
