@@ -1,8 +1,6 @@
 <script>
-	export let name;
 	let fileContent = '';
-    let incidents = [];
-    let incidentsByYear = {};  // New structure: { '2023': [{date, title, description}, ...], ... }
+    let incidentsByYear = {};
     let selectedIncidents = [];
 
     function readFile(event) {
@@ -47,15 +45,18 @@
             }
         });
     }
+	
+	let displayedIncidents = '';
 
-    function selectYear(year) {
-        selectedIncidents = incidentsByYear[year].map(incident => `${incident.date} - ${incident.title}\n${incident.description}`).join('\n\n');
-    }
+	function selectYear(year) {
+		selectedIncidents = incidentsByYear[year];
+		displayedIncidents = selectedIncidents.map(incident => `${incident.date} - ${incident.title}\n${incident.description}`).join('\n\n');
+	}
 </script>
 
 <input type="file" on:change={readFile} accept=".txt" />
 
-{#each incidents as incident (incident.date)}
+{#each selectedIncidents as incident (incident.date)}
     <h2>{incident.date} - {incident.title}</h2>
     <p>{incident.description}</p>
 {/each}
@@ -63,19 +64,16 @@
 <main>
 	<h1>Welcome to the Aviation Incidents App</h1>
 	<input type="file" on:change={readFile} accept=".txt" />
-	{#each incidents as incident (incident.date)}
-		<h2>{incident.date} - {incident.title}</h2>
-		<p>{incident.description}</p>
-	{/each}
+	
 	<section>
-		{#each Object.keys(incidents) as year}
-			<button on:click={() => (fileContent = incidents[year])}>
+		{#each Object.keys(incidentsByYear) as year}
+			<button on:click={() => selectYear(year)}>
 				{year}
 			</button>
 		{/each}
 	</section>
-	<textarea readonly bind:value={fileContent}></textarea>
-	<p>Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.</p>
+	
+	<textarea readonly bind:value={selectedIncidents}></textarea>
 </main>
 
 <style>
