@@ -50,7 +50,6 @@
 
 	function selectYear(year) {
 		selectedIncidents = incidentsByYear[year];
-		displayedIncidents = selectedIncidents.map(incident => `${incident.date} - ${incident.title}\n${incident.description}`).join('\n\n');
 	}
 </script>
 
@@ -73,7 +72,7 @@
 		{/each}
 	</section>
 	
-	<textarea readonly bind:value={selectedIncidents}></textarea>
+	<textarea readonly bind:value={displayedIncidents}></textarea>
 </main>
 
 <style>
